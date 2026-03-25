@@ -18,6 +18,7 @@ const client = new Client({
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMembers,
     GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.DirectMessages,
   ],
 })
 
@@ -42,9 +43,20 @@ client.once(Events.ClientReady, (c) => {
   logger.info(`Komendy: ${client.commands.size}`)
   logger.divider()
 
-  c.user.setActivity('GLos Logistics | /stats', {
-    type: ActivityType.Watching,
-  })
+  // Rotacja statusów co 30s
+  const statuses = [
+    { text: 'GLos Logistics | /stats',    type: ActivityType.Watching  },
+    { text: 'trasy po Europie 🚛',         type: ActivityType.Playing   },
+    { text: 'GLos Logistics | /ranking',  type: ActivityType.Watching  },
+    { text: 'nowe podania | /recruitment',type: ActivityType.Watching  },
+  ]
+  let i = 0
+  c.user.setActivity(statuses[0].text, { type: statuses[0].type })
+
+  setInterval(() => {
+    i = (i + 1) % statuses.length
+    c.user.setActivity(statuses[i].text, { type: statuses[i].type })
+  }, 30_000)
 })
 
 // ─── Interaction Handler ──────────────────────
@@ -118,7 +130,9 @@ client.on(Events.GuildMemberAdd, async (member) => {
       timestamp: new Date().toISOString(),
     }],
   })
-}).on(Events.GuildMemberRemove, (member) => {
+})
+
+client.on(Events.GuildMemberRemove, (member) => {
   logger.event(`Opuścił serwer: ${member.user.tag}`)
 })
 
